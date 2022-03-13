@@ -7,20 +7,24 @@ public class BallHandler : MonoBehaviour
 {
     private Camera mainCamera;
     private bool isDragging;
-    [SerializeField] private Rigidbody2D currentBallRigidBody;
-    [SerializeField] private SpringJoint2D currentBallSpringJoint;
+    private Rigidbody2D currentBallRigidBody;
+    private SpringJoint2D currentBallSpringJoint;
+    [SerializeField] private GameObject ballPrefab;
+    [SerializeField] private Rigidbody2D pivot;
     [SerializeField] private float delayDuration; 
+     [SerializeField] private float respawnDelay; 
     // Start is called before the first frame update
     void Start()
     {
         mainCamera = Camera.main;
+         SpawnNewBall();
     }
 
     // Update is called once per frame
     void Update()
     {
         if(currentBallRigidBody == null) {return; }  //frame tamamlanınca rigidbody null ise bişey yapma.
-        if(!Touchscreen.current.primaryTouch.press.isPressed) //Ekrana dokunulmayan frame ler için yapılacaklar. Top bırakıldığında buraya girer.
+        if(!Touchscreen.current.primaryTouch.press.isPressed) //Ekrana dokunulmayan frame ler için yapılacaklar. Örn. Top bırakıldığında buraya girer.
         {
             if (isDragging) // İlk dokunma sonrası top bırakıldığı anda isPressed false isDragging true olacak ve LaunchBall çağırılacak.
             {
@@ -50,5 +54,14 @@ public class BallHandler : MonoBehaviour
     {
         currentBallSpringJoint.enabled=false;
         currentBallSpringJoint = null;
+        Invoke(nameof(SpawnNewBall),respawnDelay);
+    }
+
+    private void SpawnNewBall()
+    {
+        GameObject ballInstance = Instantiate(ballPrefab,pivot.position,Quaternion.identity);
+        currentBallRigidBody = ballInstance.GetComponent<Rigidbody2D>();
+        currentBallSpringJoint = ballInstance.GetComponent<SpringJoint2D>();
+        currentBallSpringJoint.connectedBody = pivot;
     }
 }
